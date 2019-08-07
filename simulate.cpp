@@ -15,7 +15,7 @@ int main(int argc, char const *argv[]) {
     int line_size_l2 = 64;
     int line_size_llc = 64;
     int num_sets_l1 = 64;
-    int num_sets_l2 = 256;
+    int num_sets_l2 = 512;
 
     unsigned int tid;
     ull block_addr;
@@ -24,7 +24,7 @@ int main(int argc, char const *argv[]) {
 
     L1Cache l1data =
         L1Cache(num_sets_l1, associativity_l1, line_size_l1, 1, 0, LRU);
-    L1Cache l1instruction = L1Cache(num_sets_l1, associativity_l1, line_size_l2,
+    L1Cache l1instruction = L1Cache(num_sets_l1, associativity_l1, line_size_l1,
                                     INSTRUCTION, 0, LRU);
 
     L2Cache l2unified = L2Cache(num_sets_l2, associativity_l2, line_size_l2, 1, 0, LRU);
