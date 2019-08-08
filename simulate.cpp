@@ -1,4 +1,5 @@
 #include "constants.h"
+#include "LLCache.h"
 #include "L2Cache.h"
 #include "L1Cache.h"
 
@@ -16,6 +17,7 @@ int main(int argc, char const *argv[]) {
     int line_size_llc = 64;
     int num_sets_l1 = 64;
     int num_sets_l2 = 512;
+    int num_sets_llc = (int)pow(2, 10);
 
     unsigned int tid;
     ull block_addr;
@@ -29,9 +31,13 @@ int main(int argc, char const *argv[]) {
 
     L2Cache l2unified = L2Cache(num_sets_l2, associativity_l2, line_size_l2, 1, 0, LRU);
 
+    LLCache llcache = LLCache(num_sets_llc, associativity_llc, line_size_llc, 1, 0, LRU);
+
     l1data.set_child(&l2unified);
     l1instruction.set_child(&l2unified);
     l2unified.set_parent(&l1data, &l1instruction);
+    l2unified.set_child(&llcache);
+    llcache.set_parent(&l2unified);
 
     // L2Cache* l2 = new L2Cache(2,3,LRU);
     // l1->set_child(l2);

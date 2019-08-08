@@ -1,13 +1,12 @@
 #include "constants.h"
-#include "L1Cache.h"
 #include "L2Cache.h"
 #include "LLCache.h"
 
-L2Cache::L2Cache(int num_sets, int associativity, int line_size, int type, int id,
+LLCache::LLCache(int num_sets, int associativity, int line_size, int type, int id,
                  replacement_policy policy) {
     this->lineMask = ((uint64_t)line_size) - 1;
     this->setShift = log2(line_size);
-    this->setMask = (((uint64_t)pow(2, 12) / associativity) - 1) << setShift;
+    this->setMask = (((uint64_t)(5 * pow(2, 12)) / associativity) - 1) << setShift;
     this->tagMask = ~(this->setMask | this->lineMask);
 
     this->associativity = associativity;
@@ -19,16 +18,11 @@ L2Cache::L2Cache(int num_sets, int associativity, int line_size, int type, int i
     this->data.resize(num_sets, vector<ll>(associativity, INVALID));
 }
 
-void L2Cache::set_parent(L1Cache* parentData, L1Cache* parentInstruction) {
-    this->parentData = parentData;
-    this->parentInstruction = parentInstruction;
+void LLCache::set_parent(L2Cache *parent) {
+    this->parent = parent;
 }
 
-void L2Cache::set_child(LLCache *child) {
-    this->child = child;
-}
-
-void L2Cache::find_in_cache(ull addr, int category, ull pc) {
+void LLCache::find_in_cache(ull addr, int category, ull pc) {
     uint64_t set = (addr & setMask) >> setShift;
     uint64_t tag = addr & tagMask;
 
@@ -48,8 +42,9 @@ void L2Cache::find_in_cache(ull addr, int category, ull pc) {
             return;
         }
     }
-    // Miss
-    this->child->find_in_cache(addr, category, pc);
+    // Recording  a Miss
+    cout << pc << " " << this->id << " " << addr << " " << category << endl;
+    // this->child->find_in_cache(addr);
 
     // If cache has space left
     for (int j = 0; j < this->associativity; ++j) {
@@ -89,15 +84,7 @@ void L2Cache::find_in_cache(ull addr, int category, ull pc) {
             break;
     }
 
-    uint64_t evict_addr = tag | (set << setMask);
-
-    if (category == INSTRUCTION) {
-        this->parentInstruction->invalidate(evict_addr);
-    } else {
-        this->parentData->invalidate(evict_addr);
-    }
-
     this->data[idx][evict_way] = tag;
 }
 
-L2Cache::~L2Cache() {}
+LLCache::~LLCache() {}

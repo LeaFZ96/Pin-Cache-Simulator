@@ -1,3 +1,6 @@
 simulate
 pinatrace*
 result*
+.vscode
+*.swp
+*.out
